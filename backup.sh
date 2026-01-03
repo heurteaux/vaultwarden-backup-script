@@ -44,6 +44,7 @@ export TO_NAME
 export PROGRAM_NAME
 export LOGO_FORMAT
 export INSTANCE_URL
+export CONTAINER_RUNTIME
 
 # ~~~ Logging helper functions ~~~
 
@@ -105,29 +106,31 @@ export BACKUP_TIME
 export PARAGRAPH
 
 # ~~~ Service specific operations ~~~
-# Customize these functions based on your backup needs
 
 run_pre_backup_operations() {
-    # Add your pre-backup operations here
-    # Examples:
-    # - Stop services for consistent backups
-    # - Create database dumps
-    # - Prepare data for backup
+    info "Starting vaultwarden backup operations..."
     
-    # Example database dump:
-    # docker exec -t myapp_db pg_dumpall --clean --if-exists --username="$DB_USERNAME" > "$UPLOAD_LOCATION"/database-backup/database.sql
+    DB_BACKUP_NAME="db-backup-$(date +'%Y%m%d-%H%M%S').sqlite3"
     
-    : # No-op (remove this line when adding your operations)
+    # Try sqlite3 first if available, if notfallback to vaultwarden built-in backup
+    info "Creating SQLite database backup via container ($CONTAINER_RUNTIME)..."
+    if $CONTAINER_RUNTIME exec "$VAULTWARDEN_CONTAINER" command -v sqlite3 >/dev/null 2>&1; then
+        # sqlite3 is available in the container
+        $CONTAINER_RUNTIME exec "$VAULTWARDEN_CONTAINER" sqlite3 /data/db.sqlite3 ".backup '/data/$DB_BACKUP_NAME'"
+    else
+        # sqlite3 not available, use vaultwarden's built-in backup
+        info "sqlite3 not available in container, using vaultwarden built-in backup..."
+        $CONTAINER_RUNTIME exec "$VAULTWARDEN_CONTAINER" /vaultwarden backup
+        # The built-in backup doesn't create a separate file, so clear DB_BACKUP_NAME
+        DB_BACKUP_NAME=""
+    fi
+    
+    info "Vaultwarden backup preparation completed"
+    info "Will backup entire data directory: $UPLOAD_LOCATION"
 }
 
 run_post_backup_operations() {
-    # Add your post-backup operations here
-    # Examples:
-    # - Restart services
-    # - Clean up temporary files
-    # - Send additional notifications
-    
-    : # No-op (remove this line when adding your operations)
+    :
 }
 
 # ~~~ Cleanup trap in case of uncaught error ~~~
@@ -230,7 +233,7 @@ fi
 info "Repository connectivity check passed"
 info "Starting backup..."
 
-# Backup the most important directories into an archive named after
+# Backup the vaultwarden data directory into an archive named after
 # the machine this script is currently running on:
 
 borg create                         \
@@ -243,10 +246,8 @@ borg create                         \
                                     \
     ::"{hostname}-{now}"            \
     "$UPLOAD_LOCATION"
-    # Add custom exclusions here if needed:
-    # --exclude "$UPLOAD_LOCATION/cache/" \
-    # --exclude "$UPLOAD_LOCATION/temp/" \
-    # --exclude "*.tmp"
+    # Optional: exclude icon_cache d irectory by uncommenting line bellow
+    # --exclude "$UPLOAD_LOCATION/icon_cache/"
 
 BACKUP_EXIT_CODE=$?
 handle_errors "Backup" $BACKUP_EXIT_CODE
