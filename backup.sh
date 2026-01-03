@@ -97,13 +97,6 @@ OS_NAME="$(grep -E '^PRETTY_NAME=' /etc/os-release | cut -d= -f2- | tr -d '"')"
 BACKUP_TIME="$(date +'%d/%m/%Y %H:%M:%S')"
 PARAGRAPH="encountered problems during backup, please review logs carefully" # default value, overwritten on backup success
 
-export EMAIL_TEMPLATE
-export LOGO_PATH
-export LOGO_IMG
-export FORMATTED_HOSTNAME
-export OS_NAME
-export BACKUP_TIME
-export PARAGRAPH
 
 # ~~~ Service specific operations ~~~
 
@@ -183,9 +176,12 @@ send_pretty_email() {
         error "Failed to read log file: $OUTPUT_FILE"
         exit 1
     fi
-    export LOGS
 
-    if ! cat "$EMAIL_TEMPLATE" | envsubst | fold -s -w 998 | msmtp "$TO_EMAIL"
+    # Pass all variables only to envsubst, not to all subprocesses
+    if ! EMAIL_TEMPLATE="$EMAIL_TEMPLATE" LOGO_PATH="$LOGO_PATH" LOGO_IMG="$LOGO_IMG" \
+         FORMATTED_HOSTNAME="$FORMATTED_HOSTNAME" OS_NAME="$OS_NAME" BACKUP_TIME="$BACKUP_TIME" \
+         PARAGRAPH="$PARAGRAPH" SUBJECT="$SUBJECT" TITLE="$TITLE" LOGS="$LOGS" \
+         cat "$EMAIL_TEMPLATE" | envsubst | fold -s -w 998 | msmtp "$TO_EMAIL"
     then
         error "failed to send alert email"
         exit 1
@@ -193,21 +189,21 @@ send_pretty_email() {
 }
 
 send_error_email() {
-    export SUBJECT="Backup failed"
-    export TITLE="failed"
+    SUBJECT="Backup failed"
+    TITLE="failed"
     send_pretty_email
 }
 
 send_success_email() {
-    export SUBJECT="Backup completed successfully"
-    export TITLE="completed successfully"
-    export PARAGRAPH="successfully backed up all data"
+    SUBJECT="Backup completed successfully"
+    TITLE="completed successfully"
+    PARAGRAPH="successfully backed up all data"
     send_pretty_email
 }
 
 send_connectivity_error_email() {
-    export SUBJECT="Backup failed - Cannot reach repository"
-    export TITLE="failed - cannot reach repository"
+    SUBJECT="Backup failed - Cannot reach repository"
+    TITLE="failed - cannot reach repository"
     send_pretty_email
 }
 
