@@ -180,12 +180,9 @@ send_pretty_email() {
         error "Failed to read log file: $OUTPUT_FILE"
         exit 1
     fi
+    export LOGS
 
-    # Pass all variables only to envsubst, not to all subprocesses
-    if ! EMAIL_TEMPLATE="$EMAIL_TEMPLATE" LOGO_PATH="$LOGO_PATH" LOGO_IMG="placeholder" \
-         FORMATTED_HOSTNAME="$FORMATTED_HOSTNAME" OS_NAME="$OS_NAME" BACKUP_TIME="$BACKUP_TIME" \
-         PARAGRAPH="$PARAGRAPH" SUBJECT="$SUBJECT" TITLE="$TITLE" LOGS="placeholder" \
-         cat "$EMAIL_TEMPLATE" | envsubst | fold -s -w 998 | msmtp "$TO_EMAIL"
+    if ! cat "$EMAIL_TEMPLATE" | envsubst | fold -s -w 998 | msmtp "$TO_EMAIL"
     then
         error "failed to send alert email"
         exit 1
