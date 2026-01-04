@@ -97,6 +97,13 @@ OS_NAME="$(grep -E '^PRETTY_NAME=' /etc/os-release | cut -d= -f2- | tr -d '"')"
 BACKUP_TIME="$(date +'%d/%m/%Y %H:%M:%S')"
 PARAGRAPH="encountered problems during backup, please review logs carefully" # default value, overwritten on backup success
 
+export EMAIL_TEMPLATE
+export LOGO_PATH
+export LOGO_IMG
+export FORMATTED_HOSTNAME
+export OS_NAME
+export BACKUP_TIME
+export PARAGRAPH
 
 # ~~~ Service specific operations ~~~
 
