@@ -197,21 +197,21 @@ send_pretty_email() {
 }
 
 send_error_email() {
-    SUBJECT="Backup failed"
-    TITLE="failed"
+    export SUBJECT="Backup failed"
+    export TITLE="failed"
     send_pretty_email
 }
 
 send_success_email() {
-    SUBJECT="Backup completed successfully"
-    TITLE="completed successfully"
-    PARAGRAPH="successfully backed up all data"
+    export SUBJECT="Backup completed successfully"
+    export TITLE="completed successfully"
+    export PARAGRAPH="successfully backed up all data"
     send_pretty_email
 }
 
 send_connectivity_error_email() {
-    SUBJECT="Backup failed - Cannot reach repository"
-    TITLE="failed - cannot reach repository"
+    export SUBJECT="Backup failed - Cannot reach repository"
+    export TITLE="failed - cannot reach repository"
     send_pretty_email
 }
 
