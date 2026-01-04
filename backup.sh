@@ -176,18 +176,33 @@ send_pretty_email() {
         exit 1
     fi
     
-    if ! LOGS="$(cat "$OUTPUT_FILE" 2>&1)"; then
-        error "Failed to read log file: $OUTPUT_FILE"
+    # Create temporary file for processed template
+    TEMP_EMAIL="$(mktemp)"
+    trap 'rm -f "$TEMP_EMAIL"' RETURN
+    
+    # Export only small variables for envsubst
+    export FORMATTED_HOSTNAME OS_NAME BACKUP_TIME PARAGRAPH SUBJECT TITLE
+    
+    # Process template with envsubst, then manually substitute large variables
+    if ! cat "$EMAIL_TEMPLATE" | envsubst > "$TEMP_EMAIL"; then
+        error "Failed to process email template"
         exit 1
     fi
-
-    # Pass all variables only to envsubst, not to all subprocesses
-    if ! EMAIL_TEMPLATE="$EMAIL_TEMPLATE" LOGO_PATH="$LOGO_PATH" LOGO_IMG="$LOGO_IMG" \
-         FORMATTED_HOSTNAME="$FORMATTED_HOSTNAME" OS_NAME="$OS_NAME" BACKUP_TIME="$BACKUP_TIME" \
-         PARAGRAPH="$PARAGRAPH" SUBJECT="$SUBJECT" TITLE="$TITLE" LOGS="$LOGS" \
-         cat "$EMAIL_TEMPLATE" | envsubst | fold -s -w 998 | msmtp "$TO_EMAIL"
-    then
-        error "failed to send alert email"
+    
+    # Use sed to substitute LOGO_IMG and LOGS from files to avoid ARG_MAX
+    # This reads the files inline instead of passing through environment
+    if ! sed -i "s|\$LOGO_IMG|$(base64 "$LOGO_PATH" | tr -d '\n')|g" "$TEMP_EMAIL" 2>/dev/null; then
+        error "Failed to substitute logo image"
+        exit 1
+    fi
+    
+    if ! sed -i "s|\$LOGS|$(cat "$OUTPUT_FILE" | sed 's/[&/\]/\\&/g')|g" "$TEMP_EMAIL" 2>/dev/null; then
+        error "Failed to substitute logs"
+        exit 1
+    fi
+    
+    if ! fold -s -w 998 "$TEMP_EMAIL" | msmtp "$TO_EMAIL"; then
+        error "Failed to send alert email"
         exit 1
     fi
 }
