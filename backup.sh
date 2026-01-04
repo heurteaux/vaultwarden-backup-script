@@ -176,7 +176,7 @@ send_pretty_email() {
         exit 1
     fi
     
-    if ! LOGS="$(cat "$OUTPUT_FILE" 2>&1)"; then
+    if ! LOGS="$(tail -n 25 "$OUTPUT_FILE" 2>&1)"; then
         error "Failed to read log file: $OUTPUT_FILE"
         exit 1
     fi
