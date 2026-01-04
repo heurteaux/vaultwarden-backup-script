@@ -182,9 +182,9 @@ send_pretty_email() {
     fi
 
     # Pass all variables only to envsubst, not to all subprocesses
-    if ! EMAIL_TEMPLATE="$EMAIL_TEMPLATE" LOGO_PATH="$LOGO_PATH" LOGO_IMG="$LOGO_IMG" \
+    if ! EMAIL_TEMPLATE="$EMAIL_TEMPLATE" LOGO_PATH="$LOGO_PATH" LOGO_IMG="placeholder" \
          FORMATTED_HOSTNAME="$FORMATTED_HOSTNAME" OS_NAME="$OS_NAME" BACKUP_TIME="$BACKUP_TIME" \
-         PARAGRAPH="$PARAGRAPH" SUBJECT="$SUBJECT" TITLE="$TITLE" LOGS="$LOGS" \
+         PARAGRAPH="$PARAGRAPH" SUBJECT="$SUBJECT" TITLE="$TITLE" LOGS="placeholder" \
          cat "$EMAIL_TEMPLATE" | envsubst | fold -s -w 998 | msmtp "$TO_EMAIL"
     then
         error "failed to send alert email"
