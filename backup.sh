@@ -110,10 +110,14 @@ run_pre_backup_operations() {
     if $CONTAINER_RUNTIME exec "$VAULTWARDEN_CONTAINER" command -v sqlite3 >/dev/null 2>&1; then
         # sqlite3 is available in the container
         $CONTAINER_RUNTIME exec "$VAULTWARDEN_CONTAINER" sqlite3 /data/db.sqlite3 ".backup '/data/$DB_BACKUP_NAME'"
+        SQLITE_EXIT_CODE=$?
+        handle_errors "SQLite database backup" "$SQLITE_EXIT_CODE"
     else
         # sqlite3 not available, use vaultwarden's built-in backup
         info "sqlite3 not available in container, using vaultwarden built-in backup..."
         $CONTAINER_RUNTIME exec "$VAULTWARDEN_CONTAINER" /vaultwarden backup
+        BUILTIN_BACKUP_EXIT_CODE=$?
+        handle_errors "Vaultwarden built-in backup" "$BUILTIN_BACKUP_EXIT_CODE"
         # The built-in backup doesn't create a separate file, so clear DB_BACKUP_NAME
         DB_BACKUP_NAME=""
     fi
