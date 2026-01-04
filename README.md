@@ -108,7 +108,6 @@ The script is already configured for Vaultwarden. Make sure your `.env` file has
 
 **For Docker installations:**
 ```sh
-USE_DOCKER=true
 CONTAINER_RUNTIME="docker"
 VAULTWARDEN_CONTAINER="vaultwarden"
 UPLOAD_LOCATION="/path/to/vaultwarden/data"  # On the host
@@ -116,7 +115,6 @@ UPLOAD_LOCATION="/path/to/vaultwarden/data"  # On the host
 
 **For Podman installations:**
 ```sh
-USE_DOCKER=true
 CONTAINER_RUNTIME="podman"
 VAULTWARDEN_CONTAINER="vaultwarden"
 UPLOAD_LOCATION="/path/to/vaultwarden/data"  # On the host
@@ -124,7 +122,7 @@ UPLOAD_LOCATION="/path/to/vaultwarden/data"  # On the host
 
 ### 6. Customize the logo
 
-Replace `logo.png` with your own logo image, or use the Vaultwarden logo (or update `LOGO_PATH` and `LOGO_FORMAT` in `.env`).
+Replace `logo.webp` with your own logo image, or use the Vaultwarden logo (or update `LOGO_PATH` and `LOGO_FORMAT` in `.env`).
 
 ## Configuration Reference
 
@@ -132,10 +130,8 @@ Replace `logo.png` with your own logo image, or use the Vaultwarden logo (or upd
 |----------|-------------|---------|
 | `LOGS_DESTINATION` | Directory for backup logs | `./backup-logs/` |
 | `UPLOAD_LOCATION` | Vaultwarden data directory (backed up directly) | `/var/lib/vaultwarden/data` |
-| `USE_DOCKER` | Whether Vaultwarden runs in a container | `true` or `false` |
-| `CONTAINER_RUNTIME` | Container runtime command (if using containers) | `docker`, `podman`, `nerdctl` |
-| `VAULTWARDEN_CONTAINER` | Container name (if using containers) | `vaultwarden` |
-| `VAULTWARDEN_BINARY_PATH` | Path to vaultwarden binary (optional) | `/usr/bin/vaultwarden` |
+| `CONTAINER_RUNTIME` | Container runtime command | `docker`, `podman`, `nerdctl` |
+| `VAULTWARDEN_CONTAINER` | Container name | `vaultwarden` |
 | `BORG_REPO` | BorgBackup repository URL | `ssh://user@host/~/backups` |
 | `BORG_PASSPHRASE` | Repository encryption passphrase | `secure-password` |
 | `BORG_RSH` | SSH command for remote repos | `ssh -i /path/to/key` |
@@ -147,8 +143,9 @@ Replace `logo.png` with your own logo image, or use the Vaultwarden logo (or upd
 | `TO_EMAIL` | Recipient email address | `admin@example.com` |
 | `TO_NAME` | Recipient display name | `Admin` |
 | `PROGRAM_NAME` | Application name for emails | `Vaultwarden` |
-| `LOGO_FORMAT` | Logo image format | `png` |
-| `LOGO_PATH` | Path to logo file | `./logo.png` |
+| `LOGO_FORMAT` | Logo image format | `webp`, `png`, `jpg` |
+| `LOGO_PATH` | Path to logo file | `./logo.webp` |
+| `EMAIL_TEMPLATE` | Path to HTML email template | `./email.html` |
 | `INSTANCE_URL` | Vaultwarden URL (optional) | `https://vault.example.com` |
 
 ## Usage
@@ -340,7 +337,3 @@ Run the script once - it will tell you which commands are missing.
 - [Official Vaultwarden Backup Guide](https://github.com/dani-garcia/vaultwarden/wiki/Backing-up-your-vault)
 - [BorgBackup Documentation](https://borgbackup.readthedocs.io/)
 - [Vaultwarden GitHub](https://github.com/dani-garcia/vaultwarden)
-
-## Restoring Backups
-
-Restoring backups works as with any borg repository, check borg's documentation.
