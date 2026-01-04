@@ -181,11 +181,13 @@ send_pretty_email() {
         exit 1
     fi
 
-    # Pass all variables only to envsubst, not to all subprocesses
-    if ! EMAIL_TEMPLATE="$EMAIL_TEMPLATE" LOGO_PATH="$LOGO_PATH" LOGO_IMG="$LOGO_IMG" \
-         FORMATTED_HOSTNAME="$FORMATTED_HOSTNAME" OS_NAME="$OS_NAME" BACKUP_TIME="$BACKUP_TIME" \
-         PARAGRAPH="$PARAGRAPH" SUBJECT="$SUBJECT" TITLE="$TITLE" LOGS="$LOGS" \
-         cat "$EMAIL_TEMPLATE" | envsubst | fold -s -w 998 | msmtp "$TO_EMAIL"
+    # Pass large variables only to envsubst, not to cat/fold/msmtp
+    if ! cat "$EMAIL_TEMPLATE" | \
+         (EMAIL_TEMPLATE="$EMAIL_TEMPLATE" LOGO_PATH="$LOGO_PATH" LOGO_IMG="$LOGO_IMG" \
+          FORMATTED_HOSTNAME="$FORMATTED_HOSTNAME" OS_NAME="$OS_NAME" BACKUP_TIME="$BACKUP_TIME" \
+          PARAGRAPH="$PARAGRAPH" SUBJECT="$SUBJECT" TITLE="$TITLE" LOGS="$LOGS" \
+          envsubst) | \
+         fold -s -w 998 | msmtp "$TO_EMAIL"
     then
         error "failed to send alert email"
         exit 1
