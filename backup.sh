@@ -181,11 +181,14 @@ send_pretty_email() {
         exit 1
     fi
 
-    # Pass large variables only to envsubst, not to cat/fold/msmtp
+    # Substitute large variables (LOGO_IMG, LOGS) using sed, then pass smaller vars to envsubst
+    # This avoids passing huge environment variables to any subprocess
     if ! cat "$EMAIL_TEMPLATE" | \
-         (EMAIL_TEMPLATE="$EMAIL_TEMPLATE" LOGO_PATH="$LOGO_PATH" LOGO_IMG="$LOGO_IMG" \
+         sed -e "s|\$LOGO_IMG|$LOGO_IMG|g" -e "s|\${LOGO_IMG}|$LOGO_IMG|g" | \
+         sed -e "s|\$LOGS|$LOGS|g" -e "s|\${LOGS}|$LOGS|g" | \
+         (EMAIL_TEMPLATE="$EMAIL_TEMPLATE" LOGO_PATH="$LOGO_PATH" \
           FORMATTED_HOSTNAME="$FORMATTED_HOSTNAME" OS_NAME="$OS_NAME" BACKUP_TIME="$BACKUP_TIME" \
-          PARAGRAPH="$PARAGRAPH" SUBJECT="$SUBJECT" TITLE="$TITLE" LOGS="$LOGS" \
+          PARAGRAPH="$PARAGRAPH" SUBJECT="$SUBJECT" TITLE="$TITLE" \
           envsubst) | \
          fold -s -w 998 | msmtp "$TO_EMAIL"
     then
